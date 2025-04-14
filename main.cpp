@@ -243,6 +243,10 @@ int main() {
                   token = strtok(nullptr, ",");
                   if (token != nullptr) {
                     mqtt_publish("lora/humidity", token);
+                    token = strtok(nullptr, ",");
+                    if (token != nullptr){
+                      mqtt_publish("lora/pressure", token);
+                      }
                     }
                 }
             }

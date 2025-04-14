@@ -17,15 +17,24 @@
 #include "Arduino.h"
 #include <Wire.h>
 #include "DHT.h"
+#include <Adafruit_BMP085.h>
+
+const int SCLpin = 42;
+const int SDApin = 41;
+
 //#include <Adafruit_Sensor.h>
+
+
 
 #define DHTPIN 4
 #define DHTTYPE DHT22
 
+Adafruit_BMP085 bmp;
 DHT dht(DHTPIN, DHTTYPE);
 
 float temperature = 0;
 float humidity = 0;
+float pressure = 0;
 
 #define RF_FREQUENCY                                868100000 // Hz
 
@@ -74,13 +83,20 @@ void setup() {
     Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 ); 
+                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+    Wire.begin(SDApin, SCLpin); 
+    if (!bmp.begin()) {
+      Serial.println("Could not find BMP180 sensor!");
+    while (1);
+    } 
    }
 
 
 
 void loop()
 {
+  //Serial.print(bmp.readPressure());
+  pressure = bmp.readPressure();
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
   
@@ -88,7 +104,7 @@ void loop()
 	{
     delay(250);
 		
-		sprintf(txpacket, "%.1f,%.f", temperature, humidity);  //start a package
+		sprintf(txpacket, "%.1f,%.f,%.f", temperature, humidity,pressure);  //start a package
    
 		Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
 
