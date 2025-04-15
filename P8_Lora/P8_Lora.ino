@@ -13,29 +13,32 @@
  * https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series
  * */
 
+
+//Including Libraries
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
 #include <Wire.h>
 #include "DHT.h"
 #include <Adafruit_BMP085.h>
 
+//Define I2C pins from ESP-32
 const int SCLpin = 42;
 const int SDApin = 41;
 
-//#include <Adafruit_Sensor.h>
-
-
-
+//Define DHT pin and type
 #define DHTPIN 4
 #define DHTTYPE DHT22
-
-Adafruit_BMP085 bmp;
 DHT dht(DHTPIN, DHTTYPE);
 
+//Define Pressure sensor
+Adafruit_BMP085 bmp;
+
+//define variables taken from sensor
 float temperature = 0;
 float humidity = 0;
 float pressure = 0;
 
+//LoRa configurations
 #define RF_FREQUENCY                                868100000 // Hz
 
 #define TX_OUTPUT_POWER                             5        // dBm
@@ -55,36 +58,47 @@ float pressure = 0;
 #define LORA_IQ_INVERSION_ON                        false
 
 
-#define RX_TIMEOUT_VALUE                            1000
+#define RX_TIMEOUT_VALUE                            1000 // Receiving Timeout
 #define BUFFER_SIZE                                 30 // Define the payload size here
 
-char txpacket[BUFFER_SIZE];
-char rxpacket[BUFFER_SIZE];
+// Buffers for transmitting and receiving
+char txpacket[BUFFER_SIZE]; 
+char rxpacket[BUFFER_SIZE]; 
 
-double txNumber;
+double txNumber;  // Counter or placeholder for transmitted data (unused here)
 
-bool lora_idle=true;
+bool lora_idle=true;  // Flag to track LoRa status
 
+// / Radio event structure and callback declarations
 static RadioEvents_t RadioEvents;
-void OnTxDone( void );
-void OnTxTimeout( void );
+void OnTxDone( void );  // Callback when transmission is done
+void OnTxTimeout( void ); // Callback for transmission timeout
 
 void setup() {
+    //Initialize serial for debugging
     Serial.begin(115200);
-    Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
-    dht.begin();
-    txNumber=0;
 
+    // Initialize the Heltec Board
+    Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
+
+    //begin DHT sensor
+    dht.begin();
+    
+    // Initialize LoRa radio events
     RadioEvents.TxDone = OnTxDone;
     RadioEvents.TxTimeout = OnTxTimeout;
     
+    // Initialize the LoRa Radio
     Radio.Init( &RadioEvents );
     Radio.SetChannel( RF_FREQUENCY );
     Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
-    Wire.begin(SDApin, SCLpin); 
+    //Begin Wire for I2C comms
+    Wire.begin(SDApin, SCLpin);
+
+    //Checking if the sensor works. Neccessary to run 
     if (!bmp.begin()) {
       Serial.println("Could not find BMP180 sensor!");
     while (1);
@@ -95,31 +109,38 @@ void setup() {
 
 void loop()
 {
-  //Serial.print(bmp.readPressure());
+  //Read from sensors
   pressure = bmp.readPressure();
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
   
+  //Check if LoRa is ready to transmit
 	if(lora_idle == true)
 	{
     delay(250);
 		
-		sprintf(txpacket, "%.1f,%.f,%.f", temperature, humidity,pressure);  //start a package
+    //start a package
+		sprintf(txpacket, "%.1f,%.f,%.f", temperature, humidity, pressure);  
    
+    //Show in Serial the package ready to be send
 		Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
 
-		Radio.Send( (uint8_t *)txpacket, strlen(txpacket) ); //send the package out	
-    lora_idle = false;
+		//send the package out	
+    Radio.Send( (uint8_t *)txpacket, strlen(txpacket) ); 
+    lora_idle = false; // Mark the radio as busy
 	}
+  // Process radio IRQs (e.g., TxDone, TxTimeout)
   Radio.IrqProcess( );
 }
 
+// Callback when transmission is successful
 void OnTxDone( void )
 {
 	Serial.println("TX done......");
 	lora_idle = true;
 }
 
+// Callback when transmission times out
 void OnTxTimeout( void )
 {
     Radio.Sleep( );
