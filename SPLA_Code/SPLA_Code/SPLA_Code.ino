@@ -79,57 +79,36 @@ void loop() {
 
 void codec_setup()
 {
-  // General setup needed
+  // Basic codec setup
   codec.enableVREF();
   codec.enableVMID();
 
-  // Setup signal flow to the ADC
+  // Enable left mic path
   codec.enableLMIC();
-  codec.enableRMIC();
 
-  // Connect from INPUT1 to "n" (aka inverting) inputs of PGAs.
+  // Connect Lin1 to the inverting input of the left PGA
   codec.connectLMN1();
-  codec.connectRMN1();
 
-  // Disable mutes on PGA inputs (aka INTPUT1)
+  // Unmute PGA input
   codec.disableLINMUTE();
-  codec.disableRINMUTE();
 
-  // Set pga volumes
-  codec.setLINVOLDB(0.00); // Valid options are -17.25dB to +30dB (0.75dB steps)
-  codec.setRINVOLDB(0.00); // Valid options are -17.25dB to +30dB (0.75dB steps)
+  // Set PGA volume
+  codec.setLINVOLDB(0.00);
 
-  // Set input boosts to get inputs 1 to the boost mixers
+  // No boost on input
   codec.setLMICBOOST(WM8960_MIC_BOOST_GAIN_0DB);
-  codec.setRMICBOOST(WM8960_MIC_BOOST_GAIN_0DB);
 
-  // Connect from MIC inputs (aka pga output) to boost mixers
+  // Connect PGA output to boost mixer and enable it
   codec.connectLMIC2B();
-  codec.connectRMIC2B();
-
-  // Enable boost mixers
   codec.enableAINL();
-  codec.enableAINR();
 
-  // Connect LB2LO (booster to output mixer (analog bypass)
+  // Analog bypass from boost mixer to output mixer
   codec.enableLB2LO();
-  codec.enableRB2RO();
-
-  // Disconnect from DAC outputs to output mixer
-  codec.disableLD2LO();
-  codec.disableRD2RO();
-
-  // Set gainstage between booster mixer and output mixer
-  codec.setLB2LOVOL(WM8960_OUTPUT_MIXER_GAIN_0DB); 
-  codec.setRB2ROVOL(WM8960_OUTPUT_MIXER_GAIN_0DB); 
-
-  // Enable output mixers
+  codec.setLB2LOVOL(WM8960_OUTPUT_MIXER_GAIN_0DB);
   codec.enableLOMIX();
-  codec.enableROMIX();
 
-  // CLOCK STUFF, These settings will get you 44.1KHz sample rate, and class-d 
-  // freq at 705.6kHz
-  codec.enablePLL(); // Needed for class-d amp clock
+  // Clock setup for 44.1kHz sampling
+  codec.enablePLL();
   codec.setPLLPRESCALE(WM8960_PLLPRESCALE_DIV_2);
   codec.setSMD(WM8960_PLL_MODE_FRACTIONAL);
   codec.setCLKSEL(WM8960_CLKSEL_PLL);
@@ -137,33 +116,24 @@ void codec_setup()
   codec.setBCLKDIV(4);
   codec.setDCLKDIV(WM8960_DCLKDIV_16);
   codec.setPLLN(7);
-  codec.setPLLK(0x86, 0xC2, 0x26); // PLLK=86C226h
-  //codec.setADCDIV(0); // Default is 000 (what we need for 44.1KHz)
-  //codec.setDACDIV(0); // Default is 000 (what we need for 44.1KHz)
+  codec.setPLLK(0x86, 0xC2, 0x26);
   codec.setWL(WM8960_WL_16BIT);
 
+  // Peripheral (slave) mode
   codec.enablePeripheralMode();
-  //codec.enableMasterMode();
-  //codec.setALRCGPIO(); // Note, should not be changed while ADC is enabled.
 
-  // Enable ADCs, and disable DACs
+  // Enable ADC (left only)
   codec.enableAdcLeft();
-  codec.enableAdcRight();
-  codec.disableDacLeft();
-  codec.disableDacRight();
-  codec.disableDacMute();
-
-  //codec.enableLoopBack(); // Loopback sends ADC data directly into DAC
+  codec.disableDacLeft(); // Not needed
   codec.disableLoopBack();
+  codec.enableDacMute();  // Default state
 
-  // Default is "soft mute" on, so we must disable mute to make channels active
-  codec.enableDacMute(); 
-
+  // Headphone output setup
   codec.enableHeadphones();
-  codec.enableOUT3MIX(); // Provides VMID as buffer for headphone ground
-
+  codec.enableOUT3MIX(); // Buffer ground reference
   codec.setHeadphoneVolumeDB(0.00);
 }
+
 
 void i2s_install() {
   // Set up I2S Processor configuration
