@@ -1,3 +1,15 @@
+/*
+Stuff missing:
+- A second bigger buffer, storing the values from sbuffer. This would allow for a larger FFT_SIZE
+- Double check the math
+- Add comments
+- Make more efficient
+- Adjust the code to pass the total A-weighted SPL out
+- Combine with main code
+
+*/
+
+
 #include <Wire.h>
 #include <SparkFun_WM8960_Arduino_Library.h> 
 #include <driver/i2s.h>
