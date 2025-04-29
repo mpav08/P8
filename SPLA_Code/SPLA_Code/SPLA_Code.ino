@@ -3,13 +3,13 @@
 #include <driver/i2s.h>
 #include <arduinoFFT.h>
 
-// Connections to I2S
+// Connections to I2S.
 #define I2S_WS 25
 #define I2S_SD 17
 #define I2S_SDO 4
 #define I2S_SCK 16
 
-// Use I2S Processor 0
+// Use I2S Processor 0.
 #define I2S_PORT I2S_NUM_0
 
 // Fourier Transform
@@ -20,39 +20,25 @@ ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, FFT_SIZE, 44100.0);
 // Read more about the library here: https://github.com/kosme/arduinoFFT/wiki/api
 
 
-// Define input buffer length
+// Define input buffer length. Warning i2s can only handle a bufferlength of up to 1024.
 #define bufferLen 1024
 int16_t sBuffer[bufferLen];
-
-WM8960 codec;
-
-int db_SPL;
-
-
-
-
-
-
-
+WM8960 codec; // creates an instance of the codec.
 
 void setup(){
   Serial.begin(115200);
   Wire.begin();
-  if (codec.begin() == false) //Begin communication over I2C
+  if (codec.begin() == false) //Begin communication over I2C.
   {
     Serial.println("The device did not respond. Please check wiring.");
     while (1); // Freeze
   }
   Serial.println("Device is connected properly.");
-
   codec_setup();
-
   // Set up I2S
   i2s_install();
   i2s_setpin();
   i2s_start(I2S_PORT);
-
-
 }
 
 void loop() {
@@ -60,23 +46,27 @@ void loop() {
   esp_err_t result = i2s_read(I2S_PORT, &sBuffer, sizeof(sBuffer), &bytesIn, portMAX_DELAY);
   if (result == ESP_OK) {
     int samples_read = bytesIn / sizeof(int16_t);
+
     if (samples_read == FFT_SIZE) {
+
       for (int i = 0; i < FFT_SIZE; i++) {
-        float voltage = (sBuffer[i] / 32768.0) * 3.3;
-        float pascal = voltage / 0.01258925412;
-        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); // Hann window
+        float voltage = (sBuffer[i] / 32768.0) * 3.3; // Converts the i2s signal saved to the sBuffer to its equivalent voltage.
+        float pascal = voltage / 0.01258925412; // Converts the measured voltage to its equivalent pressure in pascal. this is done based on the microphone sensitivty.
+
+        // Applies the Hann window
+        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); 
         vImag[i] = 0;
       }
 
       FFT.compute(vReal, vImag, FFT_SIZE, FFT_FORWARD);
       FFT.complexToMagnitude(vReal, vImag, FFT_SIZE);
-
       computeThirdOctaveBandsAWeightedSPL(vReal, FFT_SIZE, 44100.0);
     }
   }
 }
 
 
+// The following three functions are used to setup the codec and i2s communication between the esp32 and the codec.
 void codec_setup()
 {
   // Basic codec setup
@@ -133,8 +123,6 @@ void codec_setup()
   codec.enableOUT3MIX(); // Buffer ground reference
   codec.setHeadphoneVolumeDB(0.00);
 }
-
-
 void i2s_install() {
   // Set up I2S Processor configuration
   const i2s_driver_config_t i2s_config = {
@@ -155,7 +143,6 @@ void i2s_install() {
 
   i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
 }
-
 void i2s_setpin() {
   // Set I2S pin configuration
   const i2s_pin_config_t pin_config = {
@@ -169,7 +156,10 @@ void i2s_setpin() {
   i2s_set_pin(I2S_PORT, &pin_config);
 }
 
-
+/* Takes the vReal values from the complexToMagnitude() function and splits into frequency bands.
+The SPL of each band is then calculated. Aftewards, A-weigting is applied to each band.
+Lastly the Total A-weighted SPL for the whole frequency is calculated.
+All these walues are printed to serial. */ 
 void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float samplingFrequency) {
   const float refPressure = 0.00002; // Reference pressure in Pa for 0 dB SPL
 
