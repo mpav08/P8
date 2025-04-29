@@ -110,17 +110,17 @@ void setup() {
 void loop()
 {
   //Read from sensors
-  pressure = bmp.readPressure();
+  pressure = bmp.readPressure()/1000;
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
-  
+
   //Check if LoRa is ready to transmit
 	if(lora_idle == true)
 	{
     delay(250);
 		
     //start a package
-		sprintf(txpacket, "%.1f,%.f,%.f", temperature, humidity, pressure);  
+		sprintf(txpacket, "%.1f,%.f,%.1f", temperature, humidity, pressure);  
    
     //Show in Serial the package ready to be send
 		Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));

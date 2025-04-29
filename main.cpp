@@ -278,17 +278,48 @@ int main() {
 
                 //Break message in different parts so that each meassurement is published 
                 char* token = strtok(message, ",");
-                if (token != nullptr) {
-                  mqtt_publish("lora/temperature", token);
-                  token = strtok(nullptr, ",");
-                  if (token != nullptr) {
-                    mqtt_publish("lora/humidity", token);
-                    token = strtok(nullptr, ",");
-                    if (token != nullptr){
-                      mqtt_publish("lora/pressure", token);
-                      }
-                    }
+
+                // Check that the first token (temperature) exists
+                if (token == nullptr) {
+                  printf("Invalid packet: missing temperature\n");
+                  continue;
+                  }
+                float temperature = atof(token);
+  
+                // Second token (humidity)
+                token = strtok(nullptr, ",");
+                if (token == nullptr) {
+                    printf("Invalid packet: missing humidity\n");
+                    continue;
                 }
+                float humidity = atof(token);
+                
+                // Third token (pressure)
+                token = strtok(nullptr, ",");
+                if (token == nullptr) {
+                    printf("Invalid packet: missing pressure\n");
+                    continue;
+                }
+                float pressure = atof(token);
+                
+                // Now, validate that all 3 values make sense
+                if (temperature < -40.0 || temperature > 85.0 ||
+                    humidity < 0.0 || humidity > 100.0 ||
+                    pressure < 80.0 || pressure > 120.0) {
+                    printf("Invalid values: temp=%.2f, hum=%.2f, pres=%.2f\n", temperature, humidity, pressure);
+                    continue; // Ignore this corrupted packet
+                }
+                
+                char temp_buf[16];
+                snprintf(temp_buf, sizeof(temp_buf), "%.2f", temperature);
+                mqtt_publish("lora/temperature", temp_buf);
+                char hum_buf[16];
+                snprintf(hum_buf, sizeof(hum_buf), "%.2f", humidity);
+                mqtt_publish("lora/humidity", hum_buf);
+                
+                char pres_buf[16];
+                snprintf(pres_buf, sizeof(pres_buf), "%.2f", pressure);
+                mqtt_publish("lora/pressure", pres_buf);
             }
         }
         // Keep MQTT client loop running
