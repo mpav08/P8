@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <SparkFun_WM8960_Arduino_Library.h> 
 #include <driver/i2s.h>
-
+#include <arduinoFFT.h>
 
 // Connections to I2S
 #define I2S_WS 25
@@ -12,6 +12,14 @@
 // Use I2S Processor 0
 #define I2S_PORT I2S_NUM_0
 
+// Fourier Transform
+#define FFT_SIZE 1024
+float vReal[FFT_SIZE];
+float vImag[FFT_SIZE];
+ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, FFT_SIZE, 44100.0);
+// Read more about the library here: https://github.com/kosme/arduinoFFT/wiki/api
+
+
 // Define input buffer length
 #define bufferLen 1024
 int16_t sBuffer[bufferLen];
@@ -19,6 +27,12 @@ int16_t sBuffer[bufferLen];
 WM8960 codec;
 
 int db_SPL;
+
+
+
+
+
+
 
 
 void setup(){
@@ -41,31 +55,27 @@ void setup(){
 
 }
 
-void loop(){
-  // Get I2S data and place in data buffer
+void loop() {
   size_t bytesIn = 0;
-  esp_err_t result = i2s_read(I2S_PORT, &sBuffer, bufferLen, &bytesIn, portMAX_DELAY);
-  if (result == ESP_OK)
-  {
-    // Read I2S data buffer
-    int16_t samples_read = bytesIn / sizeof(int16_t);
-    if (samples_read > 0) {
-      float pascal_rms = 0;
-      for (int16_t i = 0; i < samples_read; ++i)
-      {
-        float voltage = (sBuffer[i] / 32768.0) * 3.3; //Converts the input buffer values to their equivalent measured voltage
-        float pascal = voltage / 0.01258925412; // Applies the microphone sensitivity to the voltage, to convert voltage to pascal
-        pascal_rms += pascal * pascal; // This squares the the pascal and adds it to the pascal_rms
+  esp_err_t result = i2s_read(I2S_PORT, &sBuffer, sizeof(sBuffer), &bytesIn, portMAX_DELAY);
+  if (result == ESP_OK) {
+    int samples_read = bytesIn / sizeof(int16_t);
+    if (samples_read == FFT_SIZE) {
+      for (int i = 0; i < FFT_SIZE; i++) {
+        float voltage = (sBuffer[i] / 32768.0) * 3.3;
+        float pascal = voltage / 0.01258925412;
+        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); // Hann window
+        vImag[i] = 0;
       }
-      pascal_rms = sqrt(pascal_rms / samples_read); // This takes the squared and summed pascal, and averages it while squaring it. use samples_read not bufferLen
-      db_SPL = 20 * log10(pascal_rms / (20e-6));  // Converts pascal to SPL
-     
-      Serial.printf("dB:");
-      Serial.println(db_SPL);
+
+      FFT.compute(vReal, vImag, FFT_SIZE, FFT_FORWARD);
+      FFT.complexToMagnitude(vReal, vImag, FFT_SIZE);
+
+      computeThirdOctaveBands(vReal);
     }
   }
-
 }
+
 
 void codec_setup()
 {
@@ -188,3 +198,52 @@ void i2s_setpin() {
 
   i2s_set_pin(I2S_PORT, &pin_config);
 }
+
+void computeThirdOctaveBands(float* spectrum) {
+  const float sampleRate = 44100.0;
+  const float binWidth = sampleRate / FFT_SIZE;
+
+  struct Band {
+    float center;
+    float low;
+    float high;
+  };
+
+  Band bands[] = {
+    {31.5, 28.0, 35.5}, {40.0, 35.5, 44.5}, {50.0, 44.5, 56.0},
+    {63.0, 56.0, 71.0}, {80.0, 71.0, 89.0}, {100.0, 89.0, 112.0},
+    {125.0, 112.0, 140.0}, {160.0, 140.0, 180.0}, {200.0, 180.0, 225.0},
+    {250.0, 225.0, 280.0}, {315.0, 280.0, 355.0}, {400.0, 355.0, 450.0},
+    {500.0, 450.0, 560.0}, {630.0, 560.0, 710.0}, {800.0, 710.0, 900.0},
+    {1000.0, 900.0, 1120.0}, {1250.0, 1120.0, 1400.0}, {1600.0, 1400.0, 1800.0},
+    {2000.0, 1800.0, 2250.0}, {2500.0, 2250.0, 2800.0}, {3150.0, 2800.0, 3550.0},
+    {4000.0, 3550.0, 4500.0}, {5000.0, 4500.0, 5600.0}, {6300.0, 5600.0, 7100.0},
+    {8000.0, 7100.0, 9000.0}, {10000.0, 9000.0, 11200.0}, {12500.0, 11200.0, 14000.0},
+    {16000.0, 14000.0, 18000.0}
+  };
+
+  int numBands = sizeof(bands) / sizeof(Band);
+
+  for (int b = 0; b < numBands; b++) {
+    float power_sum = 0;
+    int binCount = 0;
+
+    for (int k = 0; k < FFT_SIZE / 2; k++) {
+      float freq = k * binWidth;
+      if (freq >= bands[b].low && freq <= bands[b].high) {
+        power_sum += spectrum[k] * spectrum[k];
+        binCount++;
+      }
+    }
+
+    if (binCount > 0) {
+      float rms = sqrt(power_sum / binCount);
+      float db_spl = 20 * log10(rms / 20e-6);
+      Serial.printf("Band %.0f Hz: %.2f dB SPL\n", bands[b].center, db_spl);
+    }
+  }
+
+  Serial.println("--------");
+}
+
+
