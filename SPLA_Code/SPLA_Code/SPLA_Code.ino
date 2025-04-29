@@ -71,7 +71,7 @@ void loop() {
       FFT.compute(vReal, vImag, FFT_SIZE, FFT_FORWARD);
       FFT.complexToMagnitude(vReal, vImag, FFT_SIZE);
 
-      computeThirdOctaveBands(vReal);
+      computeThirdOctaveBandsAWeightedSPL(vReal, FFT_SIZE, 44100.0);
     }
   }
 }
@@ -199,51 +199,68 @@ void i2s_setpin() {
   i2s_set_pin(I2S_PORT, &pin_config);
 }
 
-void computeThirdOctaveBands(float* spectrum) {
-  const float sampleRate = 44100.0;
-  const float binWidth = sampleRate / FFT_SIZE;
 
-  struct Band {
-    float center;
-    float low;
-    float high;
+void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float samplingFrequency) {
+  const float refPressure = 0.00002; // Reference pressure in Pa for 0 dB SPL
+
+  const int numBands = 30;
+  float centerFrequencies[numBands] = {
+    25, 31.5, 40, 50, 63, 80, 100, 125, 160,
+    200, 250, 315, 400, 500, 630, 800, 1000,
+    1250, 1600, 2000, 2500, 3150, 4000, 5000,
+    6300, 8000, 10000, 12500, 16000, 20000
   };
 
-  Band bands[] = {
-    {31.5, 28.0, 35.5}, {40.0, 35.5, 44.5}, {50.0, 44.5, 56.0},
-    {63.0, 56.0, 71.0}, {80.0, 71.0, 89.0}, {100.0, 89.0, 112.0},
-    {125.0, 112.0, 140.0}, {160.0, 140.0, 180.0}, {200.0, 180.0, 225.0},
-    {250.0, 225.0, 280.0}, {315.0, 280.0, 355.0}, {400.0, 355.0, 450.0},
-    {500.0, 450.0, 560.0}, {630.0, 560.0, 710.0}, {800.0, 710.0, 900.0},
-    {1000.0, 900.0, 1120.0}, {1250.0, 1120.0, 1400.0}, {1600.0, 1400.0, 1800.0},
-    {2000.0, 1800.0, 2250.0}, {2500.0, 2250.0, 2800.0}, {3150.0, 2800.0, 3550.0},
-    {4000.0, 3550.0, 4500.0}, {5000.0, 4500.0, 5600.0}, {6300.0, 5600.0, 7100.0},
-    {8000.0, 7100.0, 9000.0}, {10000.0, 9000.0, 11200.0}, {12500.0, 11200.0, 14000.0},
-    {16000.0, 14000.0, 18000.0}
+  float aWeighting[numBands] = {
+    -44.7, -39.4, -34.6, -30.2, -26.2, -22.5, -19.1, -16.1, -13.4,
+    -10.9, -8.6, -6.6, -4.8, -3.2, -1.9, -0.8, 0.0,
+    0.6, 1.0, 1.2, 1.3, 1.2, 1.0, 0.5,
+    -0.1, -1.1, -2.5, -4.3, -6.6, -9.3
   };
 
-  int numBands = sizeof(bands) / sizeof(Band);
+  float bandEnergy[numBands] = {0};
+  float totalLinearAWeightedPower = 0;
 
-  for (int b = 0; b < numBands; b++) {
-    float power_sum = 0;
-    int binCount = 0;
+  float binWidth = samplingFrequency / fftSize;
 
-    for (int k = 0; k < FFT_SIZE / 2; k++) {
-      float freq = k * binWidth;
-      if (freq >= bands[b].low && freq <= bands[b].high) {
-        power_sum += spectrum[k] * spectrum[k];
-        binCount++;
+  // Accumulate FFT magnitudes into third-octave bands
+  for (int i = 1; i < fftSize / 2; i++) {
+    float freq = i * binWidth;
+
+    for (int band = 0; band < numBands; band++) {
+      float fCenter = centerFrequencies[band];
+      float fLower = fCenter / pow(2.0, 1.0 / 6.0);
+      float fUpper = fCenter * pow(2.0, 1.0 / 6.0);
+
+      if (freq >= fLower && freq < fUpper) {
+        float pressure = vReal[i] / fftSize;
+        float power = pressure * pressure;
+        bandEnergy[band] += power;
+        break;
       }
-    }
-
-    if (binCount > 0) {
-      float rms = sqrt(power_sum / binCount);
-      float db_spl = 20 * log10(rms / 20e-6);
-      Serial.printf("Band %.0f Hz: %.2f dB SPL\n", bands[b].center, db_spl);
     }
   }
 
-  Serial.println("--------");
+  Serial.println("Third-Octave Band SPL (A-weighted):");
+  for (int band = 0; band < numBands; band++) {
+    if (bandEnergy[band] > 0) {
+      float SPL = 10.0 * log10(bandEnergy[band] / (refPressure * refPressure));
+      float SPLA = SPL + aWeighting[band];
+
+      Serial.print("Band ");
+      Serial.print(centerFrequencies[band], 1);
+      Serial.print(" Hz: ");
+      Serial.print(SPLA, 1);
+      Serial.println(" dB SPLA");
+
+      totalLinearAWeightedPower += pow(10, SPLA / 10.0);
+    }
+  }
+
+  float totalSPLA = 10.0 * log10(totalLinearAWeightedPower);
+  Serial.print("Total SPLA: ");
+  Serial.print(totalSPLA, 1);
+  Serial.println(" dB SPLA");
 }
 
 
