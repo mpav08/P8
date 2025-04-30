@@ -1,12 +1,10 @@
 /*
 Stuff missing:
-- A second bigger buffer, storing the values from sbuffer. This would allow for a larger FFT_SIZE
 - Double check the math
 - Add comments
 - Make more efficient
 - Adjust the code to pass the total A-weighted SPL out
 - Combine with main code
-
 */
 
 
@@ -25,7 +23,7 @@ Stuff missing:
 #define I2S_PORT I2S_NUM_0
 
 // Fourier Transform
-#define FFT_SIZE 8192
+#define FFT_SIZE 8192 //8192 seems to be the limit. Otherwise it causes DRAM issues. Remember it needs to be a multiple of 2. It may be possible to increase this using PSRAM if the esp32 has it.Otherwise more efficient memmory usage might be needed.
 float vReal[FFT_SIZE];
 float vImag[FFT_SIZE];
 ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, FFT_SIZE, 44100.0);
