@@ -1,10 +1,7 @@
 /*
 Stuff missing:
 - Double check the math
-- Add comments
-- Make more efficient
-- Adjust the code to pass the total A-weighted SPL out
-- Combine with main code
+- Make a modified version to combine with main code
 */
 
 
