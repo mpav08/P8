@@ -25,10 +25,12 @@ Stuff missing:
 #define I2S_PORT I2S_NUM_0
 
 // Fourier Transform
-#define FFT_SIZE 1024
+#define FFT_SIZE 8192
 float vReal[FFT_SIZE];
 float vImag[FFT_SIZE];
 ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, FFT_SIZE, 44100.0);
+int16_t fftBuffer[FFT_SIZE];              // Accumulation buffer for FFT
+int fftBufferIndex = 0;                   // Tracks number of accumulated samples
 // Read more about the library here: https://github.com/kosme/arduinoFFT/wiki/api
 
 
@@ -56,23 +58,29 @@ void setup(){
 void loop() {
   size_t bytesIn = 0;
   esp_err_t result = i2s_read(I2S_PORT, &sBuffer, sizeof(sBuffer), &bytesIn, portMAX_DELAY);
+
   if (result == ESP_OK) {
     int samples_read = bytesIn / sizeof(int16_t);
 
-    if (samples_read == FFT_SIZE) {
+    // Copy samples to fftBuffer
+    for (int i = 0; i < samples_read && fftBufferIndex < FFT_SIZE; i++) {
+      fftBuffer[fftBufferIndex++] = sBuffer[i];
+    }
 
+    // Once enough samples are collected, perform FFT
+    if (fftBufferIndex == FFT_SIZE) {
       for (int i = 0; i < FFT_SIZE; i++) {
-        float voltage = (sBuffer[i] / 32768.0) * 3.3; // Converts the i2s signal saved to the sBuffer to its equivalent voltage.
-        float pascal = voltage / 0.01258925412; // Converts the measured voltage to its equivalent pressure in pascal. this is done based on the microphone sensitivty.
-
-        // Applies the Hann window
-        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); 
+        float voltage = (fftBuffer[i] / 32768.0) * 3.3;
+        float pascal = voltage / 0.01258925412;
+        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); // Hann window
         vImag[i] = 0;
       }
 
       FFT.compute(vReal, vImag, FFT_SIZE, FFT_FORWARD);
       FFT.complexToMagnitude(vReal, vImag, FFT_SIZE);
       computeThirdOctaveBandsAWeightedSPL(vReal, FFT_SIZE, 44100.0);
+
+      fftBufferIndex = 0; // Reset buffer index after processing
     }
   }
 }
