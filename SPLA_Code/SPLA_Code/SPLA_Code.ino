@@ -2,6 +2,14 @@
 Stuff missing:
 - Double check the math
 - Make a modified version to combine with main code
+It should pass both SPL and A-weighted SPL.
+How often  is still not decided
+It might be worth making a buffer that saves thes values until they are sent to the RasberryPI
+SPL should be used for the distance calculation
+A-weighted should probably be used for evaluating how distrubing the sound would be.
+
+It might be worth passing the different 3rd octave SPL values to the RasberryPI in a future project, 
+as this might be useful for distinguishing between different noise sources
 */
 
 
@@ -51,11 +59,12 @@ void setup(){
 }
 
 void loop() {
-  size_t bytesIn = 0;
-  esp_err_t result = i2s_read(I2S_PORT, &sBuffer, sizeof(sBuffer), &bytesIn, portMAX_DELAY);
+  size_t bytesIn = 0; //Stores the number of bytes read from the I2S interface
+  esp_err_t result = i2s_read(I2S_PORT, &sBuffer, sizeof(sBuffer), &bytesIn, portMAX_DELAY); // Reads the data into the sBuffer
 
+  //Checks if the read operation was successful.
   if (result == ESP_OK) {
-    int samples_read = bytesIn / sizeof(int16_t);
+    int samples_read = bytesIn / sizeof(int16_t); // Converts the number of bytes read into the number of 16-bit audio samples
 
     // Copy samples from the sBuffer into the larger fftBuffer
     for (int i = 0; i < samples_read && fftBufferIndex < FFT_SIZE; i++) {
@@ -71,8 +80,10 @@ void loop() {
         vImag[i] = 0;
       }
 
+      // Apply the FFT function, calculate the magnitude.
       FFT.compute(vReal, vImag, FFT_SIZE, FFT_FORWARD);
       FFT.complexToMagnitude(vReal, vImag, FFT_SIZE);
+      //Creates third octave bands and calculates the A-weighted SPL values for them.
       computeThirdOctaveBandsAWeightedSPL(vReal, FFT_SIZE, 44100.0);
 
       fftBufferIndex = 0; // Reset buffer index after processing
