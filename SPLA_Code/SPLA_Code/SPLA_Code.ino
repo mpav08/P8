@@ -60,7 +60,7 @@ void loop() {
   if (result == ESP_OK) {
     int samples_read = bytesIn / sizeof(int16_t);
 
-    // Copy samples to fftBuffer
+    // Copy samples from the sBuffer into the larger fftBuffer
     for (int i = 0; i < samples_read && fftBufferIndex < FFT_SIZE; i++) {
       fftBuffer[fftBufferIndex++] = sBuffer[i];
     }
@@ -68,9 +68,9 @@ void loop() {
     // Once enough samples are collected, perform FFT
     if (fftBufferIndex == FFT_SIZE) {
       for (int i = 0; i < FFT_SIZE; i++) {
-        float voltage = (fftBuffer[i] / 32768.0) * 3.3;
-        float pascal = voltage / 0.01258925412;
-        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); // Hann window
+        float voltage = (fftBuffer[i] / 32768.0) * 3.3; // Converts the buffer values to their equivalent voltage
+        float pascal = voltage / 0.01258925412; // Converts the Voltage to pascal, using the microphone sensitivity
+        vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); // Applies the Hann window and saves it to the vReal buffer.
         vImag[i] = 0;
       }
 
@@ -85,7 +85,7 @@ void loop() {
 
 
 // The following three functions are used to setup the codec and i2s communication between the esp32 and the codec.
-void codec_setup()
+void codec_setup() // This loop has been simplified. Keep in mind that it is set up to only take Lin1 and send out mono audio
 {
   // Basic codec setup
   codec.enableVREF();
@@ -141,6 +141,7 @@ void codec_setup()
   codec.enableOUT3MIX(); // Buffer ground reference
   codec.setHeadphoneVolumeDB(0.00);
 }
+// Remember we have set I2S_CHANNEL_FMT_ONLY_LEFT. Meaning we have mono audio from Lin1
 void i2s_install() {
   // Set up I2S Processor configuration
   const i2s_driver_config_t i2s_config = {
@@ -179,9 +180,11 @@ The SPL of each band is then calculated. Aftewards, A-weigting is applied to eac
 Lastly the Total A-weighted SPL for the whole frequency is calculated.
 All these walues are printed to serial. */ 
 void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float samplingFrequency) {
-  const float refPressure = 0.00002; // Reference pressure in Pa for 0 dB SPL
+  const float refPressure = 0.00002; // Reference pressure in Pa for 0 dB SPL (20μPa)
 
-  const int numBands = 30;
+  const int numBands = 30; // The number of frequency bands
+
+  // The center frequencies of each band
   float centerFrequencies[numBands] = {
     25, 31.5, 40, 50, 63, 80, 100, 125, 160,
     200, 250, 315, 400, 500, 630, 800, 1000,
@@ -189,6 +192,7 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
     6300, 8000, 10000, 12500, 16000, 20000
   };
 
+// The A-weigting factor for each frequency band
   float aWeighting[numBands] = {
     -44.7, -39.4, -34.6, -30.2, -26.2, -22.5, -19.1, -16.1, -13.4,
     -10.9, -8.6, -6.6, -4.8, -3.2, -1.9, -0.8, 0.0,
@@ -196,22 +200,27 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
     -0.1, -1.1, -2.5, -4.3, -6.6, -9.3
   };
 
-  float bandEnergy[numBands] = {0};
+  //What do they
+  float bandEnergy[numBands] = {0}; // used to accumulate the energy/power of each frequency band
   float totalLinearAWeightedPower = 0;
 
+  // Frequency resolution per FFT bin
   float binWidth = samplingFrequency / fftSize;
 
-  // Accumulate FFT magnitudes into third-octave bands
+  // Accumulate FFT magnitudes into third-octave bands (only the positive bins)
   for (int i = 1; i < fftSize / 2; i++) {
     float freq = i * binWidth;
 
+      // The following loop calculates the frequency band for each center frequency (±1/6 octave)
     for (int band = 0; band < numBands; band++) {
       float fCenter = centerFrequencies[band];
       float fLower = fCenter / pow(2.0, 1.0 / 6.0);
       float fUpper = fCenter * pow(2.0, 1.0 / 6.0);
 
+      // If the FFT bin frequency is inside a band, its power is added
       if (freq >= fLower && freq < fUpper) {
-        float pressure = vReal[i] / fftSize;
+        // Converts FFT magnitude to pressure, computes power, and accumulates it
+        float pressure = 2.0*vReal[i] / fftSize; // vReal is multiplied by 2, because we are dealing with a single sided spectrum
         float power = pressure * pressure;
         bandEnergy[band] += power;
         break;
@@ -219,10 +228,13 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
     }
   }
 
+  // The following calculates the SPL and applies the A-weigthing
   Serial.println("Third-Octave Band SPL (A-weighted):");
   for (int band = 0; band < numBands; band++) {
     if (bandEnergy[band] > 0) {
+      // Converts energy to SPL
       float SPL = 10.0 * log10(bandEnergy[band] / (refPressure * refPressure));
+      // Converts SPL to A-weighted SPL
       float SPLA = SPL + aWeighting[band];
 
       Serial.print("Band ");
@@ -230,11 +242,12 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
       Serial.print(" Hz: ");
       Serial.print(SPLA, 1);
       Serial.println(" dB SPLA");
-
+      // Collect the calculated A-weighted SPL and calculates the power for all frequency bands 
       totalLinearAWeightedPower += pow(10, SPLA / 10.0);
     }
   }
 
+  // converts the total power to A-weighted SPL
   float totalSPLA = 10.0 * log10(totalLinearAWeightedPower);
   Serial.print("Total SPLA: ");
   Serial.print(totalSPLA, 1);
