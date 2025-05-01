@@ -26,9 +26,14 @@ const int SCLpin = 42;
 const int SDApin = 41;
 
 //Define DHT pin and type
-#define DHTPIN 4
+#define DHTPIN 46
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
+
+#define I2S_WS 5
+#define I2S_SD 4
+#define I2S_SDO 3
+#define I2S_SCK 2
 
 //Define Pressure sensor
 Adafruit_BMP085 bmp;
@@ -136,7 +141,7 @@ void loop()
 // Callback when transmission is successful
 void OnTxDone( void )
 {
-	Serial.println("TX done......");
+	//Serial.println("TX done......");
 	lora_idle = true;
 }
 
