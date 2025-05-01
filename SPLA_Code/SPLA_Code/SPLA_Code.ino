@@ -193,7 +193,7 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
   const int numBands = 30; // The number of frequency bands
 
   // The center frequencies of each band
-  float centerFrequencies[numBands] = {
+  const float centerFrequencies[numBands] = {
     25, 31.5, 40, 50, 63, 80, 100, 125, 160,
     200, 250, 315, 400, 500, 630, 800, 1000,
     1250, 1600, 2000, 2500, 3150, 4000, 5000,
@@ -201,7 +201,7 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
   };
 
 // The A-weigting factor for each frequency band
-  float aWeighting[numBands] = {
+  const float aWeighting[numBands] = {
     -44.7, -39.4, -34.6, -30.2, -26.2, -22.5, -19.1, -16.1, -13.4,
     -10.9, -8.6, -6.6, -4.8, -3.2, -1.9, -0.8, 0.0,
     0.6, 1.0, 1.2, 1.3, 1.2, 1.0, 0.5,
