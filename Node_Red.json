@@ -20,43 +20,15 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 200,
+        "x": 80,
         "y": 300,
         "wires": [
             [
-                "f27b63d58d88382e",
                 "b13d6c0ade64a54d",
-                "41d5b83e2bcb19d4"
+                "f1dcd41e0423d4e6",
+                "187c2dd75a32ca74"
             ]
         ]
-    },
-    {
-        "id": "f27b63d58d88382e",
-        "type": "ui_gauge",
-        "z": "4c6622363990f819",
-        "name": "",
-        "group": "78e21e4353f44270",
-        "order": 2,
-        "width": 0,
-        "height": 0,
-        "gtype": "donut",
-        "title": "Temp",
-        "label": "Celsius",
-        "format": "{{value}}",
-        "min": 0,
-        "max": "50",
-        "colors": [
-            "#00b500",
-            "#e6e600",
-            "#ca3838"
-        ],
-        "seg1": "",
-        "seg2": "",
-        "diff": false,
-        "className": "",
-        "x": 510,
-        "y": 240,
-        "wires": []
     },
     {
         "id": "184b5f731b8babcc",
@@ -71,13 +43,13 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 250,
-        "y": 560,
+        "x": 70,
+        "y": 500,
         "wires": [
             [
                 "0e36bcaeaafe8a77",
-                "41d5b83e2bcb19d4",
-                "f7fccad68ad2b8bb"
+                "f7fccad68ad2b8bb",
+                "9e42853eea625080"
             ]
         ]
     },
@@ -87,11 +59,11 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "78e21e4353f44270",
-        "order": 3,
+        "order": 2,
         "width": 0,
         "height": 0,
         "gtype": "wave",
-        "title": "Hum",
+        "title": "Humidity",
         "label": "%",
         "format": "{{value}}",
         "min": 0,
@@ -105,8 +77,8 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 470,
-        "y": 660,
+        "x": 280,
+        "y": 560,
         "wires": []
     },
     {
@@ -147,8 +119,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 510,
-        "y": 320,
+        "x": 430,
+        "y": 280,
         "wires": [
             []
         ]
@@ -164,8 +136,8 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "utf8",
-        "x": 960,
-        "y": 420,
+        "x": 1140,
+        "y": 480,
         "wires": [
             []
         ]
@@ -183,7 +155,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 560,
+        "x": 580,
         "y": 20,
         "wires": []
     },
@@ -208,8 +180,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 230,
-        "y": 40,
+        "x": 90,
+        "y": 100,
         "wires": [
             [
                 "f4c3554e0506e6b3"
@@ -227,14 +199,16 @@
         "city": "Aalborg",
         "country": "Denmark",
         "language": "en",
-        "x": 380,
-        "y": 40,
+        "x": 340,
+        "y": 100,
         "wires": [
             [
                 "40aaaa07bbbfdc57",
                 "0e93a3f615abfb48",
                 "9eb6779fcf2d37c2",
-                "d7a149b8894b7a23"
+                "d7a149b8894b7a23",
+                "b836a2e0c9460abc",
+                "147f054c31722e81"
             ]
         ]
     },
@@ -251,48 +225,20 @@
         "joiner": "\\n",
         "joinerType": "str",
         "useparts": true,
-        "accumulate": false,
+        "accumulate": true,
         "timeout": "1",
-        "count": "",
+        "count": "6",
         "reduceRight": false,
         "reduceExp": "",
         "reduceInit": "",
         "reduceInitType": "",
         "reduceFixup": "",
-        "x": 450,
-        "y": 440,
+        "x": 750,
+        "y": 480,
         "wires": [
             [
-                "29a770456d84af1d"
-            ]
-        ]
-    },
-    {
-        "id": "906d77273ef12f37",
-        "type": "inject",
-        "z": "4c6622363990f819",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 240,
-        "y": 440,
-        "wires": [
-            [
-                "41d5b83e2bcb19d4"
+                "29a770456d84af1d",
+                "76dc15451f14566b"
             ]
         ]
     },
@@ -301,17 +247,19 @@
         "type": "function",
         "z": "4c6622363990f819",
         "name": "function 1",
-        "func": "let now = new Date();\n\n// Local timestamp for CSV\nlet localTime = now.toLocaleString('sv-SE').replace(\" \", \"T\"); // e.g., 2025-04-02T15:45:43\n\nlet temp = msg.payload[\"lora/temperature\"];\nlet hum = msg.payload[\"lora/humidity\"];\n\nlet csvLine = `${localTime},${temp},${hum}\\n`;\n\n// Get today's date string in format YYYY-MM-DD (local)\nlet dateString = now.toLocaleDateString('sv-SE'); // e.g., \"2025-04-02\"\n\n// Optional: Replace dash with underscore for filename safety\nlet filenameDate = dateString.replace(/-/g, \"_\");\n\n// Build filename\nlet filename = `/home/lab203/sensor_data_${filenameDate}.csv`;\n\n// Set output\nmsg.filename = filename;\nmsg.payload = csvLine;\nreturn msg;\n",
+        "func": "let now = new Date();\nlet localTime = now.toLocaleString('sv-SE').replace(\" \", \"T\");\n\nfunction unwrap(v) {\n    return typeof v === 'object' && v !== null && 'value' in v ? v.value : v;\n}\n\nlet temp = unwrap(msg.payload[\"lora/temperature\"]);\nlet hum = unwrap(msg.payload[\"lora/humidity\"]);\nlet pres = unwrap(msg.payload[\"lora/pressure\"]);\nlet tSPLA = unwrap(msg.payload[\"lora/totalSPLA\"]);\nlet spl = unwrap(msg.payload[\"lora/spl\"]);\n\nlet ow = msg.payload[\"Aalborg\"];\nlet ow_temp = ow?.tempc ?? \"NaN\";\nlet ow_hum = ow?.humidity ?? \"NaN\";\nlet ow_pres = ow?.pressure/10 ?? \"NaN\";\n\nlet csvLine = `${localTime},${temp},${hum},${pres},${tSPLA},${spl},${ow_temp},${ow_hum},${ow_pres}\\n`;\n\nlet dateString = now.toLocaleDateString('sv-SE');\nlet filenameDate = dateString.replace(/-/g, \"_\");\nlet filename = `/home/lab203/sensor_data_${filenameDate}.csv`;\n\nmsg.filename = filename;\nmsg.payload = csvLine;\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 640,
-        "y": 420,
+        "x": 940,
+        "y": 480,
         "wires": [
-            []
+            [
+                "0b8973b769a6ec30"
+            ]
         ]
     },
     {
@@ -352,8 +300,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 490,
-        "y": 560,
+        "x": 270,
+        "y": 520,
         "wires": [
             []
         ]
@@ -375,8 +323,8 @@
         "font": "",
         "fontSize": 16,
         "color": "#000000",
-        "x": 740,
-        "y": 40,
+        "x": 600,
+        "y": 60,
         "wires": []
     },
     {
@@ -403,8 +351,8 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 750,
-        "y": 80,
+        "x": 610,
+        "y": 100,
         "wires": []
     },
     {
@@ -431,8 +379,8 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 760,
-        "y": 120,
+        "x": 620,
+        "y": 140,
         "wires": []
     },
     {
@@ -440,11 +388,11 @@
         "type": "ui_text",
         "z": "4c6622363990f819",
         "group": "78e21e4353f44270",
-        "order": 2,
+        "order": 3,
         "width": 0,
         "height": 0,
         "name": "",
-        "label": "value",
+        "label": "Pressure",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "className": "",
@@ -452,8 +400,8 @@
         "font": "",
         "fontSize": 16,
         "color": "#000000",
-        "x": 410,
-        "y": 140,
+        "x": 380,
+        "y": 200,
         "wires": []
     },
     {
@@ -469,13 +417,402 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 170,
+        "x": 70,
         "y": 200,
         "wires": [
             [
-                "0b5a4714eae19263"
+                "0b5a4714eae19263",
+                "8803b4d00114d6c2"
             ]
         ]
+    },
+    {
+        "id": "b836a2e0c9460abc",
+        "type": "ui_text",
+        "z": "4c6622363990f819",
+        "group": "09bdd12a6a229c36",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Pressure (hPa)",
+        "format": "{{msg.payload.pressure/10}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 640,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "f1dcd41e0423d4e6",
+        "type": "ui_gauge",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "78e21e4353f44270",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature",
+        "label": "Celsius",
+        "format": "{{msg.payload}}",
+        "min": "-40",
+        "max": "50",
+        "colors": [
+            "#01e4e1",
+            "#04e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 390,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "145f7b8a0b4a5f73",
+        "type": "mqtt in",
+        "z": "4c6622363990f819",
+        "name": "",
+        "topic": "lora/totalSPLA",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "61138c31c4385d56",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 70,
+        "y": 580,
+        "wires": [
+            [
+                "427e26df4e448860",
+                "dbf9083e45cbe976"
+            ]
+        ]
+    },
+    {
+        "id": "427e26df4e448860",
+        "type": "ui_chart",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "e24325fd102f16a9",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Total SPLA",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "160",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#e80202",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#f50000",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 330,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f249ed97f8ac701e",
+        "type": "mqtt in",
+        "z": "4c6622363990f819",
+        "name": "",
+        "topic": "lora/spl",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "61138c31c4385d56",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 50,
+        "y": 680,
+        "wires": [
+            [
+                "f3dd8c4603372a30",
+                "927b66798cf81a56"
+            ]
+        ]
+    },
+    {
+        "id": "f3dd8c4603372a30",
+        "type": "ui_chart",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "e24325fd102f16a9",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "SPL",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "160",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#00ff11",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#f50000",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 230,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "906d77273ef12f37",
+        "type": "inject",
+        "z": "4c6622363990f819",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 80,
+        "y": 400,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "927b66798cf81a56",
+        "type": "change",
+        "z": "4c6622363990f819",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "lora/spl",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 600,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "dbf9083e45cbe976",
+        "type": "change",
+        "z": "4c6622363990f819",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "lora/totalSPLA",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 540,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "9e42853eea625080",
+        "type": "change",
+        "z": "4c6622363990f819",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "lora/humidity",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 430,
+        "y": 480,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "187c2dd75a32ca74",
+        "type": "change",
+        "z": "4c6622363990f819",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "lora/temperature",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 400,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "8803b4d00114d6c2",
+        "type": "change",
+        "z": "4c6622363990f819",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "lora/pressure",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 430,
+        "y": 340,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "147f054c31722e81",
+        "type": "change",
+        "z": "4c6622363990f819",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "Aalborg",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 630,
+        "y": 280,
+        "wires": [
+            [
+                "41d5b83e2bcb19d4"
+            ]
+        ]
+    },
+    {
+        "id": "76dc15451f14566b",
+        "type": "debug",
+        "z": "4c6622363990f819",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 380,
+        "wires": []
     },
     {
         "id": "61138c31c4385d56",
@@ -522,7 +859,7 @@
     {
         "id": "c2c21c29128782d5",
         "type": "ui_group",
-        "name": "Graphs",
+        "name": "Weather Graphs",
         "tab": "98530c9acd617941",
         "order": 3,
         "disp": true,
@@ -536,6 +873,17 @@
         "name": "Actual Weather",
         "tab": "98530c9acd617941",
         "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "e24325fd102f16a9",
+        "type": "ui_group",
+        "name": "Mic Data",
+        "tab": "98530c9acd617941",
+        "order": 4,
         "disp": true,
         "width": 6,
         "collapse": false,

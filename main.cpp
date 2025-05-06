@@ -302,17 +302,35 @@ int main() {
                 }
                 float pressure = atof(token);
                 
+                
+                // Fourth token (Total SPLA)
+                token = strtok(nullptr, ",");
+                if (token == nullptr) {
+                    printf("Invalid packet: missing SPLA\n");
+                    continue;
+                }
+                float totalSPLA = atof(token);
+                
+                token = strtok(nullptr, ",");
+                if (token == nullptr) {
+                    printf("Invalid packet: missing SPL\n");
+                    continue;
+                }
+                float spl = atof(token);
+                
                 // Now, validate that all 3 values make sense
                 if (temperature < -40.0 || temperature > 85.0 ||
                     humidity < 0.0 || humidity > 100.0 ||
-                    pressure < 80.0 || pressure > 120.0) {
-                    printf("Invalid values: temp=%.2f, hum=%.2f, pres=%.2f\n", temperature, humidity, pressure);
+                    pressure < 80.0 || pressure > 120.0 ||
+                    totalSPLA < 0.0 || totalSPLA > 160.0 || spl < 0.0 || spl > 160.0) {
+                    printf("Invalid values: temp=%.2f, hum=%.2f, pres=%.2f, totalSPLA=%.2f, spl =%.2f\n", temperature, humidity, pressure, totalSPLA, spl);
                     continue; // Ignore this corrupted packet
                 }
                 
                 char temp_buf[16];
                 snprintf(temp_buf, sizeof(temp_buf), "%.2f", temperature);
                 mqtt_publish("lora/temperature", temp_buf);
+                
                 char hum_buf[16];
                 snprintf(hum_buf, sizeof(hum_buf), "%.2f", humidity);
                 mqtt_publish("lora/humidity", hum_buf);
@@ -320,8 +338,17 @@ int main() {
                 char pres_buf[16];
                 snprintf(pres_buf, sizeof(pres_buf), "%.2f", pressure);
                 mqtt_publish("lora/pressure", pres_buf);
+                
+                char totalSPLA_buf[16];
+                snprintf(totalSPLA_buf, sizeof(totalSPLA_buf), "%.2f", totalSPLA);
+                mqtt_publish("lora/totalSPLA", totalSPLA_buf);
+
+                char spl_buf[16];
+                snprintf(spl_buf, sizeof(spl_buf), "%.2f", spl);
+                mqtt_publish("lora/spl", spl_buf);
+              }
             }
-        }
+        
         // Keep MQTT client loop running
         mosquitto_loop(mosq, 0, 1);
         delay(10); // Prevent busy looping

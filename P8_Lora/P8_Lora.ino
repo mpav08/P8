@@ -23,13 +23,14 @@
 #include <SparkFun_WM8960_Arduino_Library.h> 
 #include <driver/i2s.h>
 #include <arduinoFFT.h>
+#include <TaskScheduler.h>
 
 //Define I2C pins from ESP-32
 const int SCLpin = 42;
 const int SDApin = 41;
 
 //Define DHT pin and type
-#define DHTPIN 46
+#define DHTPIN 20
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -62,7 +63,9 @@ Adafruit_BMP085 bmp;
 float temperature = 0;
 float humidity = 0;
 float pressure = 0;
-
+float totalSPLA = 0;
+float SPL = 0;
+float SPLA = 0;
 //LoRa configurations
 #define RF_FREQUENCY                                868100000 // Hz
 
@@ -99,6 +102,35 @@ static RadioEvents_t RadioEvents;
 void OnTxDone( void );  // Callback when transmission is done
 void OnTxTimeout( void ); // Callback for transmission timeout
 
+//void t1Callback();
+void t2Callback();
+//Task t1(5000, TASK_FOREVER, &t1Callback);
+Task t2(500, TASK_FOREVER, &t2Callback);
+Scheduler runner;
+
+// void t1Callback(){
+
+// }
+
+void t2Callback(){
+	if(lora_idle == true)
+	{
+		
+    //start a package
+		sprintf(txpacket, "%.1f,%.f,%.1f,%.1f,%.1f", temperature, humidity, pressure, totalSPLA, SPL);  
+   
+    //Show in Serial the package ready to be send
+		Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
+
+		//send the package out	
+    Radio.Send( (uint8_t *)txpacket, strlen(txpacket) ); 
+    lora_idle = false; // Mark the radio as busy
+	}
+  // Process radio IRQs (e.g., TxDone, TxTimeout)
+  Radio.IrqProcess( );
+}
+
+
 void setup() {
     //Initialize serial for debugging
     Serial.begin(115200);
@@ -122,7 +154,7 @@ void setup() {
     Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+                                   true, 0, 0, LORA_IQ_INVERSION_ON, 500 );
 
 
     //Checking if the sensor works. Neccessary to run 
@@ -141,6 +173,12 @@ void setup() {
     i2s_install();
     i2s_setpin();
     i2s_start(I2S_PORT); 
+
+    runner.init();
+    //runner.addTask(t1);
+    runner.addTask(t2);
+    //t1.enable();
+    t2.enable();
    }
 
 
@@ -148,6 +186,7 @@ void setup() {
 void loop()
 {
   //Read from sensors
+  runner.execute();
   pressure = bmp.readPressure()/1000;
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
@@ -182,31 +221,14 @@ void loop()
       fftBufferIndex = 0; // Reset buffer index after processing
     }
   }
-  
+} 
   
   //Check if LoRa is ready to transmit
-	if(lora_idle == true)
-	{
-    delay(250);
-		
-    //start a package
-		sprintf(txpacket, "%.1f,%.f,%.1f", temperature, humidity, pressure);  
-   
-    //Show in Serial the package ready to be send
-		Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
-
-		//send the package out	
-    Radio.Send( (uint8_t *)txpacket, strlen(txpacket) ); 
-    lora_idle = false; // Mark the radio as busy
-	}
-  // Process radio IRQs (e.g., TxDone, TxTimeout)
-  Radio.IrqProcess( );
-}
 
 // Callback when transmission is successful
 void OnTxDone( void )
 {
-	//Serial.println("TX done......");
+	Serial.println("TX done......");
 	lora_idle = true;
 }
 
@@ -363,27 +385,27 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
   }
 
   // The following calculates the SPL and applies the A-weigthing
-  Serial.println("Third-Octave Band SPL (A-weighted):");
+  //Serial.println("Third-Octave Band SPL (A-weighted):");
   for (int band = 0; band < numBands; band++) {
     if (bandEnergy[band] > 0) {
       // Converts energy to SPL
-      float SPL = 10.0 * log10(bandEnergy[band] / (refPressure * refPressure));
+      SPL = 10.0 * log10(bandEnergy[band] / (refPressure * refPressure));
       // Converts SPL to A-weighted SPL
-      float SPLA = SPL + aWeighting[band];
+      SPLA = SPL + aWeighting[band];
 
-      Serial.print("Band ");
-      Serial.print(centerFrequencies[band], 1);
-      Serial.print(" Hz: ");
-      Serial.print(SPLA, 1);
-      Serial.println(" dB SPLA");
+      // Serial.print("Band ");
+      // Serial.print(centerFrequencies[band], 1);
+      // Serial.print(" Hz: ");
+      // Serial.print(SPLA, 1);
+      // Serial.println(" dB SPLA");
       // Collect the calculated A-weighted SPL and calculates the power for all frequency bands 
       totalLinearAWeightedPower += pow(10, SPLA / 10.0);
     }
   }
 
   // converts the total power to A-weighted SPL
-  float totalSPLA = 10.0 * log10(totalLinearAWeightedPower);
-  Serial.print("Total SPLA: ");
-  Serial.print(totalSPLA, 1);
-  Serial.println(" dB SPLA");
+  totalSPLA = 10.0 * log10(totalLinearAWeightedPower);
+  //Serial.print("Total SPLA: ");
+  //Serial.print(totalSPLA, 1);
+  //Serial.println(" dB SPLA");
 }
