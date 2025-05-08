@@ -77,8 +77,8 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 280,
-        "y": 560,
+        "x": 260,
+        "y": 460,
         "wires": []
     },
     {
@@ -90,16 +90,16 @@
         "order": 0,
         "width": 0,
         "height": 0,
-        "label": "Temp Chart",
+        "label": "Temperature Chart",
         "chartType": "line",
         "legend": "false",
         "xformat": "HH:mm:ss",
         "interpolate": "linear",
         "nodata": "",
         "dot": false,
-        "ymin": "-40",
-        "ymax": "120",
-        "removeOlder": 1,
+        "ymin": "-20",
+        "ymax": "60",
+        "removeOlder": "1",
         "removeOlderPoints": "",
         "removeOlderUnit": "3600",
         "cutout": 0,
@@ -119,8 +119,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 430,
-        "y": 280,
+        "x": 390,
+        "y": 340,
         "wires": [
             []
         ]
@@ -137,7 +137,7 @@
         "overwriteFile": "false",
         "encoding": "utf8",
         "x": 1140,
-        "y": 480,
+        "y": 460,
         "wires": [
             []
         ]
@@ -155,7 +155,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 580,
+        "x": 640,
         "y": 20,
         "wires": []
     },
@@ -173,7 +173,7 @@
                 "vt": "str"
             }
         ],
-        "repeat": "600",
+        "repeat": "300",
         "crontab": "",
         "once": true,
         "onceDelay": "0.1",
@@ -181,7 +181,7 @@
         "payload": "",
         "payloadType": "date",
         "x": 90,
-        "y": 100,
+        "y": 60,
         "wires": [
             [
                 "f4c3554e0506e6b3"
@@ -199,16 +199,16 @@
         "city": "Aalborg",
         "country": "Denmark",
         "language": "en",
-        "x": 340,
-        "y": 100,
+        "x": 280,
+        "y": 60,
         "wires": [
             [
                 "40aaaa07bbbfdc57",
                 "0e93a3f615abfb48",
-                "9eb6779fcf2d37c2",
                 "d7a149b8894b7a23",
-                "b836a2e0c9460abc",
-                "147f054c31722e81"
+                "147f054c31722e81",
+                "51c4881323c216d3",
+                "9eb6779fcf2d37c2"
             ]
         ]
     },
@@ -233,12 +233,11 @@
         "reduceInit": "",
         "reduceInitType": "",
         "reduceFixup": "",
-        "x": 750,
-        "y": 480,
+        "x": 730,
+        "y": 420,
         "wires": [
             [
-                "29a770456d84af1d",
-                "76dc15451f14566b"
+                "29a770456d84af1d"
             ]
         ]
     },
@@ -254,8 +253,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 940,
-        "y": 480,
+        "x": 960,
+        "y": 460,
         "wires": [
             [
                 "0b8973b769a6ec30"
@@ -271,7 +270,7 @@
         "order": 0,
         "width": 0,
         "height": 0,
-        "label": "Hum Chart",
+        "label": "Humidity Chart",
         "chartType": "line",
         "legend": "false",
         "xformat": "HH:mm:ss",
@@ -280,7 +279,7 @@
         "dot": false,
         "ymin": "0",
         "ymax": "100",
-        "removeOlder": 1,
+        "removeOlder": "1",
         "removeOlderPoints": "",
         "removeOlderUnit": "3600",
         "cutout": 0,
@@ -300,7 +299,7 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 270,
+        "x": 280,
         "y": 520,
         "wires": [
             []
@@ -323,7 +322,7 @@
         "font": "",
         "fontSize": 16,
         "color": "#000000",
-        "x": 600,
+        "x": 640,
         "y": 60,
         "wires": []
     },
@@ -341,7 +340,7 @@
         "label": "Celsius",
         "format": "{{msg.payload.tempc}}",
         "min": "-40",
-        "max": "50",
+        "max": "80",
         "colors": [
             "#01e4e1",
             "#04e600",
@@ -351,7 +350,7 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 610,
+        "x": 650,
         "y": 100,
         "wires": []
     },
@@ -379,29 +378,8 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 620,
+        "x": 640,
         "y": 140,
-        "wires": []
-    },
-    {
-        "id": "0b5a4714eae19263",
-        "type": "ui_text",
-        "z": "4c6622363990f819",
-        "group": "78e21e4353f44270",
-        "order": 3,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Pressure",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 380,
-        "y": 200,
         "wires": []
     },
     {
@@ -421,31 +399,11 @@
         "y": 200,
         "wires": [
             [
-                "0b5a4714eae19263",
-                "8803b4d00114d6c2"
+                "8803b4d00114d6c2",
+                "cf39dde6211bf372",
+                "4e69ebd27da6679b"
             ]
         ]
-    },
-    {
-        "id": "b836a2e0c9460abc",
-        "type": "ui_text",
-        "z": "4c6622363990f819",
-        "group": "09bdd12a6a229c36",
-        "order": 3,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Pressure (hPa)",
-        "format": "{{msg.payload.pressure/10}}",
-        "layout": "row-spread",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 640,
-        "y": 180,
-        "wires": []
     },
     {
         "id": "f1dcd41e0423d4e6",
@@ -461,7 +419,7 @@
         "label": "Celsius",
         "format": "{{msg.payload}}",
         "min": "-40",
-        "max": "50",
+        "max": "80",
         "colors": [
             "#01e4e1",
             "#04e600",
@@ -471,8 +429,8 @@
         "seg2": "",
         "diff": false,
         "className": "",
-        "x": 390,
-        "y": 240,
+        "x": 370,
+        "y": 300,
         "wires": []
     },
     {
@@ -506,7 +464,7 @@
         "order": 0,
         "width": 0,
         "height": 0,
-        "label": "Total SPLA",
+        "label": "A-weighted SPL",
         "chartType": "line",
         "legend": "false",
         "xformat": "HH:mm:ss",
@@ -515,9 +473,9 @@
         "dot": false,
         "ymin": "0",
         "ymax": "160",
-        "removeOlder": 1,
+        "removeOlder": "1",
         "removeOlderPoints": "",
-        "removeOlderUnit": "86400",
+        "removeOlderUnit": "3600",
         "cutout": 0,
         "useOneColor": false,
         "useUTC": false,
@@ -535,8 +493,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 330,
-        "y": 660,
+        "x": 280,
+        "y": 600,
         "wires": [
             []
         ]
@@ -570,8 +528,8 @@
         "name": "",
         "group": "e24325fd102f16a9",
         "order": 0,
-        "width": 0,
-        "height": 0,
+        "width": "0",
+        "height": "0",
         "label": "SPL",
         "chartType": "line",
         "legend": "false",
@@ -581,9 +539,9 @@
         "dot": false,
         "ymin": "0",
         "ymax": "160",
-        "removeOlder": 1,
+        "removeOlder": "1",
         "removeOlderPoints": "",
-        "removeOlderUnit": "86400",
+        "removeOlderUnit": "3600",
         "cutout": 0,
         "useOneColor": false,
         "useUTC": false,
@@ -601,8 +559,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 230,
-        "y": 720,
+        "x": 250,
+        "y": 700,
         "wires": [
             []
         ]
@@ -655,8 +613,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 510,
-        "y": 600,
+        "x": 490,
+        "y": 640,
         "wires": [
             [
                 "41d5b83e2bcb19d4"
@@ -709,7 +667,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 430,
+        "x": 490,
         "y": 480,
         "wires": [
             [
@@ -737,7 +695,7 @@
         "to": "",
         "reg": false,
         "x": 370,
-        "y": 400,
+        "y": 380,
         "wires": [
             [
                 "41d5b83e2bcb19d4"
@@ -763,8 +721,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 430,
-        "y": 340,
+        "x": 370,
+        "y": 260,
         "wires": [
             [
                 "41d5b83e2bcb19d4"
@@ -790,29 +748,308 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 630,
-        "y": 280,
+        "x": 650,
+        "y": 220,
         "wires": [
             [
-                "41d5b83e2bcb19d4"
+                "41d5b83e2bcb19d4",
+                "e9643db4ab582376",
+                "a68680efa8a21fc6",
+                "4e4a7d6676133178"
             ]
         ]
     },
     {
-        "id": "76dc15451f14566b",
-        "type": "debug",
+        "id": "cf39dde6211bf372",
+        "type": "ui_chart",
         "z": "4c6622363990f819",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 900,
-        "y": 380,
+        "name": "",
+        "group": "c2c21c29128782d5",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Pressure Chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "200",
+        "removeOlder": "1",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 380,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4e69ebd27da6679b",
+        "type": "ui_gauge",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "78e21e4353f44270",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "gtype": "donut",
+        "title": "Pressure",
+        "label": "kPa",
+        "format": "{{msg.payload}}",
+        "min": 0,
+        "max": "200",
+        "colors": [
+            "#00ffcc",
+            "#00ff04",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 360,
+        "y": 220,
         "wires": []
+    },
+    {
+        "id": "51c4881323c216d3",
+        "type": "ui_gauge",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "09bdd12a6a229c36",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "gtype": "donut",
+        "title": "Pressure",
+        "label": "kPa",
+        "format": "{{msg.payload.pressure/10}}",
+        "min": 0,
+        "max": "200",
+        "colors": [
+            "#00ffcc",
+            "#00ff04",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 640,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "70a005a7626ae28e",
+        "type": "ui_chart",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "9c4daa0aa81cfdc8",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "-20",
+        "ymax": "60",
+        "removeOlder": "1",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1070,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e9643db4ab582376",
+        "type": "function",
+        "z": "4c6622363990f819",
+        "name": "Temperature",
+        "func": "msg.payload = msg.payload.tempc;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 120,
+        "wires": [
+            [
+                "70a005a7626ae28e"
+            ]
+        ]
+    },
+    {
+        "id": "a68680efa8a21fc6",
+        "type": "function",
+        "z": "4c6622363990f819",
+        "name": "Humidity",
+        "func": "msg.payload = msg.payload.humidity;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 200,
+        "wires": [
+            [
+                "cd1c82c0bbfe6702"
+            ]
+        ]
+    },
+    {
+        "id": "cd1c82c0bbfe6702",
+        "type": "ui_chart",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "9c4daa0aa81cfdc8",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Humidity",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": "1",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1060,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4e4a7d6676133178",
+        "type": "function",
+        "z": "4c6622363990f819",
+        "name": "Air Pressure",
+        "func": "msg.payload = msg.payload.pressure/10;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 260,
+        "wires": [
+            [
+                "2d8e1992933cc0ba"
+            ]
+        ]
+    },
+    {
+        "id": "2d8e1992933cc0ba",
+        "type": "ui_chart",
+        "z": "4c6622363990f819",
+        "name": "",
+        "group": "9c4daa0aa81cfdc8",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Air Pressure",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "200",
+        "removeOlder": "1",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1070,
+        "y": 260,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "61138c31c4385d56",
@@ -850,7 +1087,7 @@
         "type": "ui_group",
         "name": "Sensor Weather",
         "tab": "98530c9acd617941",
-        "order": 2,
+        "order": 3,
         "disp": true,
         "width": 6,
         "collapse": false,
@@ -859,9 +1096,9 @@
     {
         "id": "c2c21c29128782d5",
         "type": "ui_group",
-        "name": "Weather Graphs",
+        "name": "Weather Graphs (Sensors)",
         "tab": "98530c9acd617941",
-        "order": 3,
+        "order": 4,
         "disp": true,
         "width": 6,
         "collapse": false,
@@ -872,7 +1109,7 @@
         "type": "ui_group",
         "name": "Actual Weather",
         "tab": "98530c9acd617941",
-        "order": 1,
+        "order": 2,
         "disp": true,
         "width": 6,
         "collapse": false,
@@ -883,7 +1120,18 @@
         "type": "ui_group",
         "name": "Mic Data",
         "tab": "98530c9acd617941",
-        "order": 4,
+        "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9c4daa0aa81cfdc8",
+        "type": "ui_group",
+        "name": "Weather Graphs (API)",
+        "tab": "98530c9acd617941",
+        "order": 1,
         "disp": true,
         "width": 6,
         "collapse": false,

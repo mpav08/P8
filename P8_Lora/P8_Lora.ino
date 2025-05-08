@@ -1,19 +1,3 @@
-/* Heltec Automation send communication test example
- *
- * Function:
- * 1. Send data from a esp32 device over hardware 
- *  
- * Description:
- * 
- * HelTec AutoMation, Chengdu, China
- * 成都惠利特自动化科技有限公司
- * www.heltec.org
- *
- * this project also realess in GitHub:
- * https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series
- * */
-
-
 //Including Libraries
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
@@ -34,6 +18,7 @@ const int SDApin = 41;
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
+//Audio Codec I2S Pins
 #define I2S_WS 5
 #define I2S_SD 4
 #define I2S_SDO 3
@@ -42,13 +27,14 @@ DHT dht(DHTPIN, DHTTYPE);
 // Use I2S Processor 0.
 #define I2S_PORT I2S_NUM_0
 
+
+//Fourier Transform
 #define FFT_SIZE 8192 //8192 seems to be the limit. Otherwise it causes DRAM issues. Remember it needs to be a multiple of 2. It may be possible to increase this using PSRAM if the esp32 has it.Otherwise more efficient memmory usage might be needed.
 float vReal[FFT_SIZE];
 float vImag[FFT_SIZE];
 ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, FFT_SIZE, 44100.0);
 int16_t fftBuffer[FFT_SIZE];              // Accumulation buffer for FFT
 int fftBufferIndex = 0;                   // Tracks number of accumulated samples
-// Read more about the library here: https://github.com/kosme/arduinoFFT/wiki/api
 
 
 // Define input buffer length. Warning i2s can only handle a bufferlength of up to 1024.
@@ -59,18 +45,17 @@ WM8960 codec; // creates an instance of the codec.
 //Define Pressure sensor
 Adafruit_BMP085 bmp;
 
-//define variables taken from sensor
+//define variables taken from sensors
 float temperature = 0;
 float humidity = 0;
 float pressure = 0;
 float totalSPLA = 0;
 float SPL = 0;
 float SPLA = 0;
+
 //LoRa configurations
 #define RF_FREQUENCY                                868100000 // Hz
-
 #define TX_OUTPUT_POWER                             5        // dBm
-
 #define LORA_BANDWIDTH                              0         // [0: 125 kHz,
                                                               //  1: 250 kHz,
                                                               //  2: 500 kHz,
@@ -84,8 +69,6 @@ float SPLA = 0;
 #define LORA_SYMBOL_TIMEOUT                         0         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
-
-
 #define RX_TIMEOUT_VALUE                            1000 // Receiving Timeout
 #define BUFFER_SIZE                                 30 // Define the payload size here
 
@@ -102,20 +85,15 @@ static RadioEvents_t RadioEvents;
 void OnTxDone( void );  // Callback when transmission is done
 void OnTxTimeout( void ); // Callback for transmission timeout
 
-//void t1Callback();
+//Task to run forever by using scheduler library
 void t2Callback();
-//Task t1(5000, TASK_FOREVER, &t1Callback);
-Task t2(500, TASK_FOREVER, &t2Callback);
+Task t2(500, TASK_FOREVER, &t2Callback); //For every 500 ms
 Scheduler runner;
 
-// void t1Callback(){
-
-// }
-
+//Check if LoRa is ready to transmit
 void t2Callback(){
 	if(lora_idle == true)
-	{
-		
+	{	
     //start a package
 		sprintf(txpacket, "%.1f,%.f,%.1f,%.1f,%.1f", temperature, humidity, pressure, totalSPLA, SPL);  
    
@@ -157,11 +135,13 @@ void setup() {
                                    true, 0, 0, LORA_IQ_INVERSION_ON, 500 );
 
 
-    //Checking if the sensor works. Neccessary to run 
+    //Checking if the Air Pressure Sensor works. Neccessary to run 
     if (!bmp.begin()) {
       Serial.println("Could not find BMP180 sensor!");
     while (1);
     }
+
+    //Check if Codec works
     if (codec.begin() == false) //Begin communication over I2C.
     {
       Serial.println("The device did not respond. Please check wiring.");
@@ -169,15 +149,14 @@ void setup() {
     }
     Serial.println("Device is connected properly.");
     codec_setup();
+
     // Set up I2S
     i2s_install();
     i2s_setpin();
     i2s_start(I2S_PORT); 
 
     runner.init();
-    //runner.addTask(t1);
     runner.addTask(t2);
-    //t1.enable();
     t2.enable();
    }
 
@@ -185,8 +164,10 @@ void setup() {
 
 void loop()
 {
-  //Read from sensors
+  //Run every task attached to the runner
   runner.execute();
+
+  //Read from sensors
   pressure = bmp.readPressure()/1000;
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
@@ -223,16 +204,16 @@ void loop()
   }
 } 
   
-  //Check if LoRa is ready to transmit
 
-// Callback when transmission is successful
+
+// Callback when LoRa transmission is successful
 void OnTxDone( void )
 {
 	Serial.println("TX done......");
 	lora_idle = true;
 }
 
-// Callback when transmission times out
+// Callback when LoRa transmission times out
 void OnTxTimeout( void )
 {
     Radio.Sleep( );
@@ -332,7 +313,7 @@ void i2s_setpin() {
 }
 
 /* Takes the vReal values from the complexToMagnitude() function and splits into frequency bands.
-The SPL of each band is then calculated. Aftewards, A-weigting is applied to each band.
+The SPL of each band is then calculated. Aftewards, A-weighting is applied to each band.
 Lastly the Total A-weighted SPL for the whole frequency is calculated.
 All these walues are printed to serial. */ 
 void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float samplingFrequency) {
@@ -356,7 +337,7 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
     -0.1, -1.1, -2.5, -4.3, -6.6, -9.3
   };
 
-  //What do they
+  
   float bandEnergy[numBands] = {0}; // used to accumulate the energy/power of each frequency band
   float totalLinearAWeightedPower = 0;
 
@@ -367,7 +348,7 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
   for (int i = 1; i < fftSize / 2; i++) {
     float freq = i * binWidth;
 
-      // The following loop calculates the frequency band for each center frequency (±1/6 octave)
+    // The following loop calculates the frequency band for each center frequency (±1/6 octave)
     for (int band = 0; band < numBands; band++) {
       float fCenter = centerFrequencies[band];
       float fLower = fCenter / pow(2.0, 1.0 / 6.0);
@@ -392,20 +373,10 @@ void computeThirdOctaveBandsAWeightedSPL(float *vReal, int fftSize, float sampli
       SPL = 10.0 * log10(bandEnergy[band] / (refPressure * refPressure));
       // Converts SPL to A-weighted SPL
       SPLA = SPL + aWeighting[band];
-
-      // Serial.print("Band ");
-      // Serial.print(centerFrequencies[band], 1);
-      // Serial.print(" Hz: ");
-      // Serial.print(SPLA, 1);
-      // Serial.println(" dB SPLA");
-      // Collect the calculated A-weighted SPL and calculates the power for all frequency bands 
       totalLinearAWeightedPower += pow(10, SPLA / 10.0);
     }
   }
 
   // converts the total power to A-weighted SPL
   totalSPLA = 10.0 * log10(totalLinearAWeightedPower);
-  //Serial.print("Total SPLA: ");
-  //Serial.print(totalSPLA, 1);
-  //Serial.println(" dB SPLA");
 }

@@ -55,7 +55,7 @@ uint32_t cp_nb_rx_bad;
 uint32_t cp_nb_rx_nocrc;
 uint32_t cp_up_pkt_fwd;
 
-//Spreading factor
+//Spreading factors
 enum sf_t { SF7 = 7, SF8, SF9, SF10, SF11, SF12};
 
 //GPIO pin config
@@ -311,6 +311,7 @@ int main() {
                 }
                 float totalSPLA = atof(token);
                 
+                // Fifth token (SPL)
                 token = strtok(nullptr, ",");
                 if (token == nullptr) {
                     printf("Invalid packet: missing SPL\n");
@@ -318,15 +319,16 @@ int main() {
                 }
                 float spl = atof(token);
                 
-                // Now, validate that all 3 values make sense
+                // Validate all values
                 if (temperature < -40.0 || temperature > 85.0 ||
                     humidity < 0.0 || humidity > 100.0 ||
                     pressure < 80.0 || pressure > 120.0 ||
                     totalSPLA < 0.0 || totalSPLA > 160.0 || spl < 0.0 || spl > 160.0) {
                     printf("Invalid values: temp=%.2f, hum=%.2f, pres=%.2f, totalSPLA=%.2f, spl =%.2f\n", temperature, humidity, pressure, totalSPLA, spl);
-                    continue; // Ignore this corrupted packet
+                    continue; // Ignore corrupted packet
                 }
                 
+                //Publish all topics to broker
                 char temp_buf[16];
                 snprintf(temp_buf, sizeof(temp_buf), "%.2f", temperature);
                 mqtt_publish("lora/temperature", temp_buf);
@@ -351,7 +353,7 @@ int main() {
         
         // Keep MQTT client loop running
         mosquitto_loop(mosq, 0, 1);
-        delay(10); // Prevent busy looping
+        delay(10); // Prevents busy looping
     }
 
     //Cleanup
