@@ -61,7 +61,7 @@ float SPLA = 0;
                                                               //  2: 500 kHz,
                                                               //  3: Reserved]
 #define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
-#define LORA_CODINGRATE                             0         // [1: 4/5,
+#define LORA_CODINGRATE                             1         // [1: 4/5,
                                                               //  2: 4/6,
                                                               //  3: 4/7,
                                                               //  4: 4/8]
@@ -69,7 +69,7 @@ float SPLA = 0;
 #define LORA_SYMBOL_TIMEOUT                         0         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
-#define RX_TIMEOUT_VALUE                            1000 // Receiving Timeout
+#define RX_TIMEOUT_VALUE                            0 // Receiving Timeout - Used to listen for received packet
 #define BUFFER_SIZE                                 30 // Define the payload size here
 
 // Buffers for transmitting and receiving
@@ -87,7 +87,7 @@ void OnTxTimeout( void ); // Callback for transmission timeout
 
 //Task to run forever by using scheduler library
 void t2Callback();
-Task t2(500, TASK_FOREVER, &t2Callback); //For every 500 ms
+Task t2(500, TASK_FOREVER, &t2Callback); //For every 1000 ms
 Scheduler runner;
 
 //Check if LoRa is ready to transmit
@@ -132,7 +132,7 @@ void setup() {
     Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, 0, 0, LORA_IQ_INVERSION_ON, 500 );
+                                   true, 0, 0, LORA_IQ_INVERSION_ON,RX_TIMEOUT_VALUE );
 
 
     //Checking if the Air Pressure Sensor works. Neccessary to run 
