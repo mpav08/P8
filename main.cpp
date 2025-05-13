@@ -216,6 +216,8 @@ void SetupLoRa() {
 
     //Configure LoRa chip
     writeRegister(REG_OPMODE, SX72_MODE_SLEEP);
+    writeRegister(REG_FIFO_ADDR_PTR, readRegister(REG_FIFO_RX_BASE_AD));
+    writeRegister(REG_OPMODE, SX72_MODE_RX_CONTINUOS);
 
     uint64_t frf = ((uint64_t)freq << 19) / 32000000;
     writeRegister(REG_FRF_MSB, (uint8_t)(frf >> 16));
@@ -229,7 +231,7 @@ void SetupLoRa() {
         writeRegister(REG_MODEM_CONFIG2, (sf << 4) | 0x04);
     } else {
         writeRegister(REG_MODEM_CONFIG3, (sf == SF11 || sf == SF12) ? 0x0C : 0x04);
-        writeRegister(REG_MODEM_CONFIG, 0x72);
+        writeRegister(REG_MODEM_CONFIG, 0x74);
         writeRegister(REG_MODEM_CONFIG2, (sf << 4) | 0x04);
     }
 
