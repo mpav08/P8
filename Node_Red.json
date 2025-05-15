@@ -87,7 +87,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "c2c21c29128782d5",
-        "order": 0,
+        "order": 1,
         "width": 0,
         "height": 0,
         "label": "Temperature Chart",
@@ -184,7 +184,8 @@
         "y": 60,
         "wires": [
             [
-                "f4c3554e0506e6b3"
+                "f4c3554e0506e6b3",
+                "c8956608c734374f"
             ]
         ]
     },
@@ -194,17 +195,16 @@
         "z": "4c6622363990f819",
         "name": "",
         "wtype": "current",
-        "lon": "",
-        "lat": "",
-        "city": "Aalborg",
-        "country": "Denmark",
+        "lon": "9.9875597",
+        "lat": "57.0139186",
+        "city": "",
+        "country": "",
         "language": "en",
-        "x": 280,
+        "x": 310,
         "y": 60,
         "wires": [
             [
                 "40aaaa07bbbfdc57",
-                "0e93a3f615abfb48",
                 "d7a149b8894b7a23",
                 "147f054c31722e81",
                 "51c4881323c216d3",
@@ -246,7 +246,7 @@
         "type": "function",
         "z": "4c6622363990f819",
         "name": "function 1",
-        "func": "let now = new Date();\nlet localTime = now.toLocaleString('sv-SE').replace(\" \", \"T\");\n\nfunction unwrap(v) {\n    return typeof v === 'object' && v !== null && 'value' in v ? v.value : v;\n}\n\nlet temp = unwrap(msg.payload[\"lora/temperature\"]);\nlet hum = unwrap(msg.payload[\"lora/humidity\"]);\nlet pres = unwrap(msg.payload[\"lora/pressure\"]);\nlet tSPLA = unwrap(msg.payload[\"lora/totalSPLA\"]);\nlet spl = unwrap(msg.payload[\"lora/spl\"]);\n\nlet ow = msg.payload[\"Aalborg\"];\nlet ow_temp = ow?.tempc ?? \"NaN\";\nlet ow_hum = ow?.humidity ?? \"NaN\";\nlet ow_pres = ow?.pressure/10 ?? \"NaN\";\n\nlet csvLine = `${localTime},${temp},${hum},${pres},${tSPLA},${spl},${ow_temp},${ow_hum},${ow_pres}\\n`;\n\nlet dateString = now.toLocaleDateString('sv-SE');\nlet filenameDate = dateString.replace(/-/g, \"_\");\nlet filename = `/home/lab203/sensor_data_${filenameDate}.csv`;\n\nmsg.filename = filename;\nmsg.payload = csvLine;\nreturn msg;\n",
+        "func": "let now = new Date();\n\n// Format time only (HH:mm:ss)\nlet timeOnly = now.toLocaleTimeString('sv-SE'); // e.g., \"15:59:41\"\n\n// Format date for filename (e.g., \"2025_05_15\")\nlet dateString = now.toLocaleDateString('sv-SE');\nlet filenameDate = dateString.replace(/-/g, \"_\");\nlet filename = `/home/lab203/sensor_data_${filenameDate}.csv`;\n\nfunction unwrap(v) {\n    return typeof v === 'object' && v !== null && 'value' in v ? v.value : v;\n}\n\nlet temp = unwrap(msg.payload[\"lora/temperature\"]);\nlet hum = unwrap(msg.payload[\"lora/humidity\"]);\nlet pres = unwrap(msg.payload[\"lora/pressure\"]);\nlet tSPLA = unwrap(msg.payload[\"lora/totalSPLA\"]);\nlet spl = unwrap(msg.payload[\"lora/spl\"]);\n\nlet ow = msg.payload[\"Aalborg\"];\nlet ow_temp = ow?.tempc ?? \"NaN\";\nlet ow_hum = ow?.humidity ?? \"NaN\";\nlet ow_pres = ow?.pressure / 10 ?? \"NaN\";\n\n// Construct CSV line with **time only**\nlet csvLine = `${timeOnly},${temp},${hum},${pres},${tSPLA},${spl},${ow_temp},${ow_hum},${ow_pres}\\n`;\n\nmsg.filename = filename;\nmsg.payload = csvLine;\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -267,7 +267,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "c2c21c29128782d5",
-        "order": 0,
+        "order": 2,
         "width": 0,
         "height": 0,
         "label": "Humidity Chart",
@@ -306,33 +306,12 @@
         ]
     },
     {
-        "id": "0e93a3f615abfb48",
-        "type": "ui_text",
-        "z": "4c6622363990f819",
-        "group": "09bdd12a6a229c36",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Location",
-        "format": "{{msg.payload.location}}",
-        "layout": "col-center",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 640,
-        "y": 60,
-        "wires": []
-    },
-    {
         "id": "9eb6779fcf2d37c2",
         "type": "ui_gauge",
         "z": "4c6622363990f819",
         "name": "",
         "group": "09bdd12a6a229c36",
-        "order": 2,
+        "order": 1,
         "width": 0,
         "height": 0,
         "gtype": "gage",
@@ -360,7 +339,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "09bdd12a6a229c36",
-        "order": 3,
+        "order": 2,
         "width": 0,
         "height": 0,
         "gtype": "wave",
@@ -451,7 +430,8 @@
         "wires": [
             [
                 "427e26df4e448860",
-                "dbf9083e45cbe976"
+                "dbf9083e45cbe976",
+                "e1a6bdb9374635ac"
             ]
         ]
     },
@@ -461,7 +441,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "e24325fd102f16a9",
-        "order": 0,
+        "order": 2,
         "width": 0,
         "height": 0,
         "label": "A-weighted SPL",
@@ -527,9 +507,9 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "e24325fd102f16a9",
-        "order": 0,
-        "width": "0",
-        "height": "0",
+        "order": 3,
+        "width": 0,
+        "height": 0,
         "label": "SPL",
         "chartType": "line",
         "legend": "false",
@@ -590,7 +570,8 @@
         "y": 400,
         "wires": [
             [
-                "41d5b83e2bcb19d4"
+                "41d5b83e2bcb19d4",
+                "e1a6bdb9374635ac"
             ]
         ]
     },
@@ -765,7 +746,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "c2c21c29128782d5",
-        "order": 0,
+        "order": 3,
         "width": 0,
         "height": 0,
         "label": "Pressure Chart",
@@ -865,7 +846,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "9c4daa0aa81cfdc8",
-        "order": 0,
+        "order": 1,
         "width": 0,
         "height": 0,
         "label": "Temperature",
@@ -949,7 +930,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "9c4daa0aa81cfdc8",
-        "order": 0,
+        "order": 2,
         "width": 0,
         "height": 0,
         "label": "Humidity",
@@ -1013,7 +994,7 @@
         "z": "4c6622363990f819",
         "name": "",
         "group": "9c4daa0aa81cfdc8",
-        "order": 0,
+        "order": 3,
         "width": 0,
         "height": 0,
         "label": "Air Pressure",
@@ -1050,6 +1031,113 @@
         "wires": [
             []
         ]
+    },
+    {
+        "id": "808e3c77892aebe5",
+        "type": "ui_text",
+        "z": "4c6622363990f819",
+        "group": "e24325fd102f16a9",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Location",
+        "label": "Coordinates",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 400,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "c8956608c734374f",
+        "type": "function",
+        "z": "4c6622363990f819",
+        "name": "function 2",
+        "func": "msg.payload = \"57.0139186, 9.9875597\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 240,
+        "y": 120,
+        "wires": [
+            [
+                "808e3c77892aebe5"
+            ]
+        ]
+    },
+    {
+        "id": "e1a6bdb9374635ac",
+        "type": "function",
+        "z": "4c6622363990f819",
+        "name": "function 3",
+        "func": "let now = new Date();\nlet timestamp = now.getTime(); // Unix timestamp in milliseconds\nlet localTime = now.toLocaleString('sv-SE');\n\nlet spla = msg.payload;\nlet baseRadius = 1;\nlet scalingFactor = 0.5;\nlet radius = baseRadius + (spla * scalingFactor);\nradius = Math.min(radius, 150); // cap at 150 meters\n\n// Get or initialize the SPLA readings array from flow context\nlet readings = flow.get(\"spla_readings\") || [];\n\n// Add new reading\nreadings.push({ spla: spla, time: timestamp });\n\n// Remove readings older than 24 hours (86400000 ms)\nreadings = readings.filter(r => now.getTime() - r.time <= 86400000);\n\n// Find the maximum SPLA reading in the last 24 hours\nlet maxReading = readings.reduce((max, r) => r.spla > max.spla ? r : max, { spla: 0, time: 0 });\nlet maxTime = new Date(maxReading.time).toLocaleString('sv-SE');\n\n// Save back to context\nflow.set(\"spla_readings\", readings);\n\n// Prepare the map circle payload\nmsg.payload = {\n    name: \"Lab Room\",\n    lat: 57.0139186,\n    lon: 9.9875597,\n    layer: \"noise\",\n    icon: \"fa-bullhorn\",\n    radius: radius,\n    fillColor: \"#ff0000\",\n    fillOpacity: 0.4,\n    color: \"#800000\",\n    weight: 1,\n    popup: `Latest: ${spla} dB at ${localTime}<br>Max: ${maxReading.spla} dB at ${maxTime}`,\n    ttl: 600,\n    type: \"circle\"\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 580,
+        "wires": [
+            [
+                "6f80cec87d753dae"
+            ]
+        ]
+    },
+    {
+        "id": "6f80cec87d753dae",
+        "type": "ui_worldmap",
+        "z": "4c6622363990f819",
+        "group": "dc2bc2a164d4bb93",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "lat": "57.0139186",
+        "lon": "9.9875597",
+        "zoom": "14",
+        "layer": "OSMG",
+        "cluster": "",
+        "maxage": "600",
+        "usermenu": "hide",
+        "layers": "hide",
+        "panit": "false",
+        "panlock": "false",
+        "zoomlock": "false",
+        "hiderightclick": "true",
+        "coords": "deg",
+        "showgrid": "false",
+        "showruler": "false",
+        "allowFileDrop": "false",
+        "path": "/worldmap",
+        "overlist": "DR,CO,RA,DN,HM",
+        "maplist": "OSMG",
+        "mapname": "",
+        "mapurl": "",
+        "mapopt": "",
+        "mapwms": false,
+        "x": 1020,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "c5352c26962dbea4",
+        "type": "ui_spacer",
+        "z": "4c6622363990f819",
+        "name": "spacer",
+        "group": "513baa0e66f0d17c",
+        "order": 1,
+        "width": 1,
+        "height": 1
     },
     {
         "id": "61138c31c4385d56",
@@ -1138,10 +1226,42 @@
         "className": ""
     },
     {
+        "id": "dc2bc2a164d4bb93",
+        "type": "ui_group",
+        "name": "Noise Map",
+        "tab": "173af63243205fea",
+        "order": 1,
+        "disp": true,
+        "width": 16,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "513baa0e66f0d17c",
+        "type": "ui_group",
+        "name": "Group 1",
+        "tab": "",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
         "id": "98530c9acd617941",
         "type": "ui_tab",
-        "name": "Home",
+        "name": "Lab Room",
         "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "173af63243205fea",
+        "type": "ui_tab",
+        "name": "Noise Map",
+        "icon": "dashboard",
+        "order": 2,
         "disabled": false,
         "hidden": false
     }

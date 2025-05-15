@@ -70,7 +70,7 @@ float SPLA = 0;
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
 #define RX_TIMEOUT_VALUE                            0 // Receiving Timeout - Used to listen for received packet
-#define BUFFER_SIZE                                 30 // Define the payload size here
+#define BUFFER_SIZE                                 32 // Define the payload size here
 
 // Buffers for transmitting and receiving
 char txpacket[BUFFER_SIZE]; 
@@ -95,7 +95,7 @@ void t2Callback(){
 	if(lora_idle == true)
 	{	
     //start a package
-		sprintf(txpacket, "%.1f,%.f,%.1f,%.1f,%.1f", temperature, humidity, pressure, totalSPLA, SPL);  
+		snprintf(txpacket, BUFFER_SIZE, "%.1f,%.f,%.1f,%.1f,%.1f", temperature, humidity, pressure, totalSPLA, SPL);  
    
     //Show in Serial the package ready to be send
 		Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
