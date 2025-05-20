@@ -55,7 +55,7 @@ float SPLA = 0;
 
 //LoRa configurations
 #define RF_FREQUENCY                                868100000 // Hz
-#define TX_OUTPUT_POWER                             5        // dBm
+#define TX_OUTPUT_POWER                             12        // dBm 
 #define LORA_BANDWIDTH                              0         // [0: 125 kHz,
                                                               //  1: 250 kHz,
                                                               //  2: 500 kHz,
@@ -87,7 +87,7 @@ void OnTxTimeout( void ); // Callback for transmission timeout
 
 //Task to run forever by using scheduler library
 void t2Callback();
-Task t2(500, TASK_FOREVER, &t2Callback); //For every 1000 ms
+Task t2(6200, TASK_FOREVER, &t2Callback); //For every 6 s
 Scheduler runner;
 
 //Check if LoRa is ready to transmit
@@ -166,7 +166,7 @@ void loop()
 {
   //Run every task attached to the runner
   runner.execute();
-
+  Radio.IrqProcess();
   //Read from sensors
   pressure = bmp.readPressure()/1000;
   temperature = dht.readTemperature();
