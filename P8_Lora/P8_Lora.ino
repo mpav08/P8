@@ -87,7 +87,7 @@ void OnTxTimeout( void ); // Callback for transmission timeout
 
 //Task to run forever by using scheduler library
 void t2Callback();
-Task t2(6200, TASK_FOREVER, &t2Callback); //For every 6 s
+Task t2(6200, TASK_FOREVER, &t2Callback); //For every 6.2 sec
 Scheduler runner;
 
 //Check if LoRa is ready to transmit
