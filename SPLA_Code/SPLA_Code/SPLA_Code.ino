@@ -19,10 +19,10 @@ as this might be useful for distinguishing between different noise sources
 #include <arduinoFFT.h>
 
 // Connections to I2S.
-#define I2S_WS 25
-#define I2S_SD 17
-#define I2S_SDO 4
-#define I2S_SCK 16
+#define I2S_WS 5
+#define I2S_SD 4
+#define I2S_SDO 3
+#define I2S_SCK 2
 
 // Use I2S Processor 0.
 #define I2S_PORT I2S_NUM_0
@@ -74,7 +74,7 @@ void loop() {
     // Once enough samples are collected, perform FFT
     if (fftBufferIndex == FFT_SIZE) {
       for (int i = 0; i < FFT_SIZE; i++) {
-        float voltage = (fftBuffer[i] / 32768.0) * 3.3; // Converts the buffer values to their equivalent voltage
+        float voltage = (fftBuffer[i] / 65536.0) * 3.3; // Converts the buffer values to their equivalent voltage
         float pascal = voltage / 0.01258925412; // Converts the Voltage to pascal, using the microphone sensitivity
         vReal[i] = pascal * 0.5 * (1 - cos(2 * PI * i / (FFT_SIZE - 1))); // Applies the Hann window and saves it to the vReal buffer.
         vImag[i] = 0;
